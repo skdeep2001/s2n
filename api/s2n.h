@@ -54,6 +54,15 @@ typedef enum {
     S2N_ERR_T_INTERNAL,
     S2N_ERR_T_USAGE
 } s2n_error_type;
+struct s2n_allocator {
+    void *(*mem_alloc0)(struct s2n_allocator *allocator, size_t size);
+    int (*mem_alloc_aligned)(struct s2n_allocator *allocator, void **memptr, size_t alignment, size_t size);
+    int (*mem_lock)(struct s2n_allocator *allocator, const void *mem, size_t size);
+    int (*mem_unlock)(struct s2n_allocator *allocator, const void *mem, size_t size);
+    int (*mem_advise)(struct s2n_allocator *allocator, void *mem, size_t size, int flags);
+    void (*mem_free)(struct s2n_allocator *allocator, void *mem);
+    void *impl;
+};
 
 extern int s2n_error_get_type(int error);
 

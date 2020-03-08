@@ -19,6 +19,8 @@
 
 #include <stdint.h>
 
+struct s2n_allocator *s2n_default_allocator(void);
+
 int s2n_mem_init(void);
 int s2n_mem_cleanup(void);
 int s2n_alloc(struct s2n_blob *b, uint32_t size);

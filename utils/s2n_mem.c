@@ -27,6 +27,60 @@
 static long page_size = 4096;
 static int use_mlock = 1;
 
+static void *s2n_alloc0(struct s2n_allocator *alloc, size_t size)
+{
+    (void)alloc;
+    return calloc(1, size);
+}
+
+static int s2n_mem_alloc_aligned(struct s2n_allocator *alloc, void **memptr, size_t alignment, size_t size)
+{
+    (void)alloc;
+    return posix_memalign(memptr, alignment, size);
+}
+
+static int s2n_mem_lock(struct s2n_allocator *alloc, const void *mem, size_t size)
+{
+    (void)alloc;
+    return mlock(mem, size);
+}
+
+static int s2n_mem_unlock(struct s2n_allocator *alloc, const void *mem, size_t size)
+{
+    (void)alloc;
+    return munlock(mem, size);
+}
+
+static int s2n_mem_advise(struct s2n_allocator *alloc, void *mem, size_t size, int flags)
+{
+    (void)alloc;
+#ifdef MADV_DONTDUMP
+    return madvise(mem, size, flags);
+#else
+    return -1;
+#endif
+}
+
+static void s2n_mem_free(struct s2n_allocator *alloc, void *mem)
+{
+    (void)alloc;
+    free(mem);
+}
+
+static struct s2n_allocator s2n_default_alloc = {
+    .mem_alloc0 = s2n_alloc0,
+    .mem_alloc_aligned = s2n_mem_alloc_aligned,
+    .mem_lock = s2n_mem_lock,
+    .mem_unlock = s2n_mem_unlock,
+    .mem_advise = s2n_mem_advise,
+    .mem_free = s2n_mem_free
+};
+
+struct s2n_allocator *s2n_default_allocator(void)
+{
+    return &s2n_default_alloc;
+}
+
 int s2n_mem_init(void)
 {
     GUARD(page_size = sysconf(_SC_PAGESIZE));
